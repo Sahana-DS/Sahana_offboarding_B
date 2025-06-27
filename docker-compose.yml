@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres07
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin234
+      POSTGRES_DB: offboarding_db
+    ports:
+      - "5133:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  backend:
+    build:
+      context: ./Backend
+    container_name: backend06
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: admin234
+      DB_NAME: offboarding_db
+      DB_PORT: 5432
+      PORT: 3215
+    ports:
+      - "3215:3215"
+    depends_on:
+      - postgres
+    restart: always
+
+  employee_offboarding:
+    build:
+      context: ./employee-offboarding
+    container_name: employee_offboarding05
+    ports:
+      - "6015:80"
+    depends_on:
+      - backend
+    restart: always
+
+  hr_offboarding:
+    build:
+      context: ./hr-offboarding
+    container_name: hr_offboarding04
+    ports:
+      - "6016:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:
+
